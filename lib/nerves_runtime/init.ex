@@ -51,6 +51,7 @@ defmodule Nerves.Runtime.Init do
     init_application_partition("nerves_fw_application_part1")
 
     System.shell("mount -o remount,exec /tmp")
+    System.shell("java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --setup-system-service false")
 
     # This GenServer is only used as a hook to initialize the application data
     # partition after the logging GenServers get started. It doesn't do
