@@ -50,6 +50,8 @@ defmodule Nerves.Runtime.Init do
     init_application_partition("nerves_fw_application_part0")
     init_application_partition("nerves_fw_application_part1")
 
+    System.shell("mount -o remount,exec /tmp")
+
     # This GenServer is only used as a hook to initialize the application data
     # partition after the logging GenServers get started. It doesn't do
     # anything afterwards, so exit the process.
