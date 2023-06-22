@@ -55,7 +55,7 @@ defmodule Nerves.Runtime.Init do
     args =
       [
         "-c",
-        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --component-default-user ggc_user:ggc_group --setup-system-service false"
+        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --setup-system-service false"
         ]
 
     spawn(fn -> MuonTrap.cmd("sh", args, into: IO.stream(:stdio, :line)) end)
