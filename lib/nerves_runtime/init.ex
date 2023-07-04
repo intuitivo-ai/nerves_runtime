@@ -61,7 +61,7 @@ defmodule Nerves.Runtime.Init do
     args =
       [
         "-c",
-        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --setup-system-service false"
+        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --component-default-user root:root --setup-system-service false"
         ]
 
     if review_files() == true do
