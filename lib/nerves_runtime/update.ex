@@ -43,9 +43,12 @@ defmodule Nerves.Runtime.Update do
                         case String.replace(binary, "\n", "") do
                           "true" ->
 
-                                    Logger.warning("PREPARE REBOOT")
+                                    Logger.warning("PREPARE_RUNTIME_REBOOT")
 
-                                    File.write!("/root/update.conf", "false", [:write])
+                                    case File.write("/root/update.conf", "false", [:write]) do
+                                      :ok -> Logger.info("MAIN_SERVICES_RUNTIME_UPDATE_WRITE")
+                                      {:error, reason} -> Logger.error("MAIN_SERVICES_RUNTIME_UPDATE_WRITE #{reason}")
+                                    end
 
                                     Process.sleep(5_000)
 
