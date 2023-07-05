@@ -47,6 +47,8 @@ defmodule Nerves.Runtime.Update do
 
                                     File.write!("/root/update.conf", "false", [:write])
 
+                                    Process.sleep(5_000)
+
                                     if status_app == nil, do: Nerves.Runtime.reboot()
 
                           "false" -> true
