@@ -7,6 +7,8 @@ defmodule Nerves.Runtime.Update do
 
   @status_app_idle "idle"
 
+  @time_review_update 10_000
+
   require Logger
 
   @spec start_link(any()) :: GenServer.on_start()
