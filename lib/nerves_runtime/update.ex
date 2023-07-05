@@ -7,7 +7,7 @@ defmodule Nerves.Runtime.Update do
 
   @status_app_idle "idle"
 
-  @time_review_update 10_000
+  @time_review_update 30_000
 
   require Logger
 
@@ -21,7 +21,9 @@ defmodule Nerves.Runtime.Update do
   @impl GenServer
   def init(_args) do
 
-    send(self(), :check_fw_update)
+    Logger.warning("INIT RUNTIME")
+
+    Process.send_after(self(), :check_fw_update, @time_review_update)
 
     {:ok, %{status_app: nil}}
   end
@@ -40,6 +42,9 @@ defmodule Nerves.Runtime.Update do
       {:ok, binary} ->
                         case String.replace(binary, "\n", "") do
                           "true" ->
+
+                                    Logger.warning("PREPARE REBOOT")
+
                                     File.write!("/root/update.conf", "false", [:write])
 
                                     if status_app == nil, do: Nerves.Runtime.reboot()
