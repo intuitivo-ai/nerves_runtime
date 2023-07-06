@@ -26,12 +26,6 @@ defmodule Nerves.Runtime.Init do
   alias Nerves.Runtime.KV
   alias Nerves.Runtime.MountParser
 
-  @path "/home/ggc_user/"
-  @file_config "config.yaml"
-  @file_device "device.pem.crt"
-  @file_private "private.pem.key"
-  @file_ca "CA.pem"
-
   require Logger
 
   # Use a fixed UUID for the application partition. This has two
@@ -56,18 +50,6 @@ defmodule Nerves.Runtime.Init do
     init_application_partition("nerves_fw_application_part0")
     init_application_partition("nerves_fw_application_part1")
 
-    System.shell("mount -o remount,exec /tmp")
-
-    args =
-      [
-        "-c",
-        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --component-default-user root:root --setup-system-service false"
-        ]
-
-    if review_files() == true do
-      spawn(fn -> MuonTrap.cmd("sh", args, into: IO.stream(:stdio, :line)) end)
-    end
-    
     # This GenServer is only used as a hook to initialize the application data
     # partition after the logging GenServers get started. It doesn't do
     # anything afterwards, so exit the process.
@@ -204,17 +186,4 @@ defmodule Nerves.Runtime.Init do
     find_shell_history_arg(rem)
   end
 
-  defp review_files() do
-
-    if File.exists?(@path <> @file_config) == true and
-       File.exists?(@path <> @file_device)  == true and
-       File.exists?(@path <> @file_ca) == true and
-       File.exists?(@path <> @file_private) == true do
-
-      true
-    else
-      false
-    end
-
-  end
 end
