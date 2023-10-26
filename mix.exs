@@ -41,8 +41,7 @@ defmodule Nerves.Runtime.MixProject do
       {:nerves_uevent, "~> 0.1.0"},
       {:ex_doc, "~> 0.22", only: :docs, runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
-      {:credo, "~> 1.5", only: :dev, runtime: false},
-      {:nerves_motd, "~> 0.1.0"}
+      {:credo, "~> 1.5", only: :dev, runtime: false}
     ]
   end
 
