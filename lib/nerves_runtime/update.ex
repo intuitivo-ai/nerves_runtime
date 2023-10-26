@@ -45,7 +45,13 @@ defmodule Nerves.Runtime.Update do
 
   #It is checked periodically to see if greengrass wrote "true" to /root/update.conf to indicate a pending update.
   @impl GenServer
-  def handle_info(:check_fw_update, %{status_app: status_app} = state) do
+  def handle_info(:check_fw_update, state) do
+
+  apps = NervesMOTD.Runtime.Target.applications()
+
+  not_started = Enum.join(apps[:loaded] -- apps[:started], ", ")
+
+  if String.contains?(not_started, "in2_firmware") do
 
     case File.read("/root/update.conf") do
       {:ok, binary} ->
@@ -61,14 +67,15 @@ defmodule Nerves.Runtime.Update do
 
                                     Process.sleep(5_000)
 
-                                    if status_app == nil, do: Nerves.Runtime.reboot()
+                                    Nerves.Runtime.reboot()
 
                           "false" -> true
                         end
       {:error, _reason} -> true
     end
+end
 
-    if status_app == nil, do: Process.send_after(self(), :check_fw_update, @time_review_update)
+    Process.send_after(self(), :check_fw_update, @time_review_update)
 
     {:noreply, state}
   end
