@@ -66,6 +66,12 @@ defmodule Nerves.Runtime.Init do
     |> do_format()
   end
 
+  def init_sd_card_partition(fstype, target, devpath) do
+
+    %{mounted: nil, fstype: fstype, target: target, devpath: devpath, format_performed: false}
+    |> do_format()
+  end
+
   defp do_format(%{fstype: nil}), do: :noop
   defp do_format(%{target: nil}), do: :noop
   defp do_format(%{devpath: nil}), do: :noop
