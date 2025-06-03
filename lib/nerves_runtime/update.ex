@@ -11,6 +11,7 @@ defmodule Nerves.Runtime.Update do
   @file_device "device.pem.crt"
   @file_private "private.pem.key"
   @file_ca "CA.pem"
+  @greengrass_control_file "/root/.greengrass_control.txt"
 
   @time_review_update 20_000
 
@@ -91,11 +92,30 @@ end
 
     {result, _ } = System.shell("ps")
 
-    if review_files() == true and String.contains?(result, "java -Droot=" ) == false do
+    # Verificar si GreenGrass está habilitado en el archivo de control antes de iniciarlo
+    if read_greengrass_control() and review_files() == true and String.contains?(result, "java -Droot=" ) == false do
+      Logger.info("NERVES_RUNTIME_UPDATE_STARTING_GREENGRASS")
       spawn(fn -> MuonTrap.cmd("sh", args, into: IO.stream(:stdio, :line)) end)
+    else
+      if not read_greengrass_control() do
+        Logger.info("NERVES_RUNTIME_UPDATE_GREENGRASS_DISABLED_BY_CONTROL_FILE")
+      end
     end
 
     {:noreply, state}
+  end
+
+  # Función para leer el estado del archivo de control de GreenGrass
+  defp read_greengrass_control do
+    case File.read(@greengrass_control_file) do
+      {:ok, content} ->
+        case String.trim(content) do
+          "disabled" -> false
+          "enabled" -> true
+          _ -> true  # default enabled
+        end
+      {:error, _} -> true  # default enabled si no existe el archivo
+    end
   end
 
   defp review_files() do
