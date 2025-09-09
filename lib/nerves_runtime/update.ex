@@ -50,9 +50,9 @@ defmodule Nerves.Runtime.Update do
 
   apps = NervesMOTD.Runtime.Target.applications()
 
-  not_started = Enum.join(apps[:loaded] -- apps[:started], ", ")
+  not_started = apps[:loaded] -- apps[:started]
 
-  if String.contains?(not_started, "in2_firmware") do
+  if Enum.member?(not_started, :in2_firmware) do
 
     case File.read("/root/update.conf") do
       {:ok, binary} ->

@@ -28,7 +28,8 @@ defmodule Nerves.Runtime.Application do
         NervesLogging.SyslogTailer,
         Nerves.Runtime.Power,
         Nerves.Runtime.Init,
-        Nerves.Runtime.Update
+        Nerves.Runtime.Update,
+        Nerves.Runtime.In2Watchdog
       ]
     end
 
