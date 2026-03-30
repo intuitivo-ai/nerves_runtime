@@ -5,14 +5,6 @@ defmodule Nerves.Runtime.Update do
   """
   use GenServer
 
-  @path "/home/ggc_user/"
-  @file_green_grass "Greengrass.jar"
-  @file_config "config.yaml"
-  @file_device "device.pem.crt"
-  @file_private "private.pem.key"
-  @file_ca "CA.pem"
-  @greengrass_control_file "/root/.greengrass_control.txt"
-
   @time_review_update 20_000
 
   require Logger
@@ -33,8 +25,6 @@ defmodule Nerves.Runtime.Update do
 
     Process.send_after(self(), :check_fw_update, @time_review_update)
 
-    Process.send_after(self(), :check_ggc, @time_review_update)
-
     {:ok, %{status_app: nil}}
   end
 
@@ -44,7 +34,7 @@ defmodule Nerves.Runtime.Update do
     {:noreply, %{state | status_app: status_app}}
   end
 
-  #It is checked periodically to see if greengrass wrote "true" to /root/update.conf to indicate a pending update.
+  # Periodically checks /root/update.conf for a pending firmware reboot request ("true").
   @impl GenServer
   def handle_info(:check_fw_update, state) do
 
@@ -79,58 +69,6 @@ end
     Process.send_after(self(), :check_fw_update, @time_review_update)
 
     {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_info(:check_ggc, state) do
-
-    args =
-      [
-        "-c",
-        "java -Droot='/home/ggc_user' -Dlog.store=FILE -jar /home/ggc_user/Greengrass.jar --init-config /home/ggc_user/config.yaml --component-default-user root:root --setup-system-service false"
-        ]
-
-    {result, _ } = System.shell("ps")
-
-    # Verificar si GreenGrass está habilitado en el archivo de control antes de iniciarlo
-    if read_greengrass_control() and review_files() == true and String.contains?(result, "java -Droot=" ) == false do
-      Logger.info("NERVES_RUNTIME_UPDATE_STARTING_GREENGRASS")
-      spawn(fn -> MuonTrap.cmd("sh", args, into: IO.stream(:stdio, :line)) end)
-    else
-      if not read_greengrass_control() do
-        Logger.info("NERVES_RUNTIME_UPDATE_GREENGRASS_DISABLED_BY_CONTROL_FILE")
-      end
-    end
-
-    {:noreply, state}
-  end
-
-  # Función para leer el estado del archivo de control de GreenGrass
-  defp read_greengrass_control do
-    case File.read(@greengrass_control_file) do
-      {:ok, content} ->
-        case String.trim(content) do
-          "disabled" -> false
-          "enabled" -> true
-          _ -> true  # default enabled
-        end
-      {:error, _} -> true  # default enabled si no existe el archivo
-    end
-  end
-
-  defp review_files() do
-
-    if File.exists?(@path <> @file_green_grass) == true and
-       File.exists?(@path <> @file_config) == true and
-       File.exists?(@path <> @file_device)  == true and
-       File.exists?(@path <> @file_ca) == true and
-       File.exists?(@path <> @file_private) == true do
-
-      true
-    else
-      false
-    end
-
   end
 
 end
