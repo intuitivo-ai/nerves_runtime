@@ -8,10 +8,11 @@ defmodule Nerves.Runtime.Update do
   - If `in2_firmware` is **not** in the started application set: clear the flag, wait, reboot
     immediately (safety net when the app never came up).
   - If `in2_firmware` **is** running: clear the flag, wait, then reboot only when
-    `status_app` is `"idle"` (same cadence as the former `In2Firmware` Utils handler).
+    `status_app` is `"idle"` (operations ready, not in a transaction).
 
-  `Nerves.Runtime.Update.status_app/1` must receive the same idle/busy strings the app
-  already sends for operational gating.
+  Use `"starting"` from boot until the app is ready for OTA reboot; `"busy"` while a
+  transaction is in progress. `Nerves.Runtime.Update.status_app/1` must track the same
+  values as `In2Firmware.Services.Operations.Utils` (Operations syncs both).
   """
 
   use GenServer
@@ -20,6 +21,7 @@ defmodule Nerves.Runtime.Update do
   @time_review_update 10_000
   @time_review_reboot 1_000
   @status_app_idle "idle"
+  @status_app_starting "starting"
 
   require Logger
 
@@ -38,7 +40,7 @@ defmodule Nerves.Runtime.Update do
 
     send(self(), :check_fw_update)
 
-    {:ok, %{status_app: @status_app_idle, reboot_pending: false}}
+    {:ok, %{status_app: @status_app_starting, reboot_pending: false}}
   end
 
   @impl GenServer
