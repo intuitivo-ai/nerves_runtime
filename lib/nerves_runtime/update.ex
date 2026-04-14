@@ -20,6 +20,7 @@ defmodule Nerves.Runtime.Update do
   @update_conf "/root/update.conf"
   @time_review_update 10_000
   @time_review_reboot 1_000
+  @time_reboot_delay 10_000
   @status_app_idle "idle"
   @status_app_starting "starting"
 
@@ -46,6 +47,13 @@ defmodule Nerves.Runtime.Update do
   @impl GenServer
   def handle_cast({:status_app, status_app}, state) do
     {:noreply, %{state | status_app: status_app}}
+  end
+
+  @impl GenServer
+  def handle_info(:reboot_immediate, state) do
+    Logger.warning("NERVES_RUNTIME_UPDATE_REBOOT_IMMEDIATE")
+    Nerves.Runtime.reboot()
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -90,8 +98,7 @@ defmodule Nerves.Runtime.Update do
               {:error, reason} -> Logger.error("NERVES_RUNTIME_UPDATE_CONF_WRITE #{reason}")
             end
 
-            Process.sleep(5_000)
-            Nerves.Runtime.reboot()
+            Process.send_after(self(), :reboot_immediate, @time_reboot_delay)
             state
 
           _ ->
@@ -113,10 +120,8 @@ defmodule Nerves.Runtime.Update do
               {:error, reason} -> Logger.error("NERVES_RUNTIME_UPDATE_CONF_WRITE #{reason}")
             end
 
-            Process.sleep(5_000)
-
             if reboot_pending == false do
-              send(self(), :review_reboot)
+              Process.send_after(self(), :review_reboot, @time_reboot_delay)
             end
 
             state
